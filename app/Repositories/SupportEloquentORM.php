@@ -15,6 +15,19 @@ class SupportEloquentORM implements SupportRepositoryInterface
   {
   }
 
+  public function paginate(int $page = 1, int $totalPerPage = 15, string $filter = null): PaginationInterface
+  {
+    $result = $this->model
+      ->where(function ($query) use ($filter) {
+        if ($filter) {
+          $query->where('subject', $filter);
+          $query->orWhere('body', 'like', "%{$filter}%");
+        }
+      })
+      ->paginate($totalPerPage, ['*'], 'page', $page);
+      dd($result);
+  }
+
   public function getAll(string $filter = null): array
   {
     return $this->model
@@ -51,13 +64,12 @@ class SupportEloquentORM implements SupportRepositoryInterface
 
   public function update(UpdateSupportDTO $dto): stdClass|null
   {
-    if(!$support = $this->model->find($dto->id)) {
+    if (!$support = $this->model->find($dto->id)) {
       return null;
     }
 
     $support->update((array) $dto);
 
     return (object) $support->toArray();
-
   }
 }
